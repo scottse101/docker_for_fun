@@ -8,7 +8,6 @@ const port = 3000;
 
 app.use(bodyParser.json());
 
-// Serve static files from the project root
 app.use(express.static(path.join(__dirname, '/')));
 
 app.post('/runcode', (req, res) => {
@@ -16,11 +15,25 @@ app.post('/runcode', (req, res) => {
 
     console.log(`Running code: ${code}`);
 
-    exec(code, (error, stdout, stderr) => {
-        if (error) {
-            res.json({ output: stderr });
+    const javaFilePath = path.join(__dirname, 'temp.java');
+    const compiledFilePath = path.join(__dirname, 'temp.class');
+
+    require('fs').writeFileSync(javaFilePath, code);
+
+    exec(`javac ${javaFilePath}`, (compileError) => {
+        if (compileError) {
+            res.json({ output: `Compilation Error: ${compileError.message}` });
         } else {
-            res.json({ output: stdout });
+            exec(`java -cp ${path.dirname(compiledFilePath)} temp`, (runError, stdout, stderr) => {
+                if (runError) {
+                    res.json({ output: `Runtime Error: ${runError.message}` });
+                } else {
+                    res.json({ output: stdout });
+                }
+
+                require('fs').unlinkSync(javaFilePath);
+                require('fs').unlinkSync(compiledFilePath);
+            });
         }
     });
 });
