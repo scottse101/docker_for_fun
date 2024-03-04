@@ -6,16 +6,14 @@ const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
-app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
 
 app.post('/runcode', (req, res) => {
     const code = req.body.code;
 
-    console.log('Running code:', code); 
+    console.log(`Running code: ${code}`);
 
     exec(code, (error, stdout, stderr) => {
         if (error) {
