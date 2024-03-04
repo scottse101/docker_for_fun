@@ -1,14 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { exec } = require('child_process');
+const path = require('path');
 
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
 
-// Serve static files from the 'public' directory
-app.use(express.static('public'));
+// Serve static files from the project root
+app.use(express.static(path.join(__dirname, '/')));
 
 app.post('/runcode', (req, res) => {
     const code = req.body.code;
@@ -22,6 +23,10 @@ app.post('/runcode', (req, res) => {
             res.json({ output: stdout });
         }
     });
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(port, () => {
